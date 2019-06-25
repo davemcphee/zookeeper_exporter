@@ -1,6 +1,16 @@
 # zookeeper_exporter
 
-A simple zookeeper exporter for prometheus. Grabs the `mntr` output, and converts each line to a prometheus gauge, including the `zk_version`.
+A simple zookeeper exporter for prometheus. Grabs the `mntr` output, and converts each line to a prometheus gauge,
+including the `zk_version`.
+
+Unlike other zookeeper exporter, this one understands that the `leaderServes=no` option without barfing, and is able to
+export the `zk_version` metric as a label, instead of skipping it. 
+
+This exporter manages sockets to zookeeper servers very carefully, setting timeouts and read / write deadlines to
+prevent hanging the stats poller when servers are slow to respond or unresponsive. 
+
+`zk.poll-interval` takes into account how long a poll took, so if you set your interval to 30s, it will poll every 30s
+*exactly*, and not every `(30s + the time it took to poll the server)`. 
 
 ## Usage
 
@@ -25,7 +35,9 @@ zookeeper_exporter --zk.hosts=10.0.0.9:2181,10.0.0.10:2181
 ~~~
 
 ## Install
-If you want to build from source, you know how. If you prefer, each tagged version release is available as a pre-compiled binary for linux.x86_64 and darwin on github under [releases](https://github.com/davemcphee/zookeeper_exporter/releases).
+If you want to build from source, you know how. If you prefer, each tagged version release is available as a
+pre-compiled binary for linux.x86_64 and darwin on github 
+under [releases](https://github.com/davemcphee/zookeeper_exporter/releases).
 
 ## ToDo
 
