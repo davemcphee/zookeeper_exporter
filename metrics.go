@@ -36,7 +36,7 @@ const (
 	leader     serverState = 2
 	standalone serverState = 3
 
-	// metric namepspace - prepended to all etric names
+	// metric namepspace - prepended to all metric names
 	namespace = "zookeeper__"
 )
 
