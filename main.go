@@ -80,11 +80,11 @@ func main() {
 	intervalDuration := time.Duration(*pollInterval) * time.Second
 
 	// Create new metrics interface
-	metrics := initMetrics()
+	metrics := newMetrics()
 
 	// Start an export thread per server
 	for _, ipport := range zkHosts {
-		p := newPoller(intervalDuration, metrics, *newZKServer(ipport))
+		p := newPoller(intervalDuration, *metrics, *newZKServer(ipport))
 		go p.pollForMetrics()
 	}
 
