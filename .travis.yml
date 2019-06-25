@@ -31,3 +31,4 @@ deploy:
     - zookeeper_exporter.darwin.amd64
   on:
     repo: davemcphee/zookeeper_exporter
+  skip_cleanup: true
