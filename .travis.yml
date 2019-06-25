@@ -31,4 +31,6 @@ deploy:
     - zookeeper_exporter.darwin.amd64
   on:
     repo: davemcphee/zookeeper_exporter
+    tags: true
+    condition: $LATEST = true
   skip_cleanup: true
