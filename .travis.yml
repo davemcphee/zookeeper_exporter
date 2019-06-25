@@ -4,9 +4,6 @@ matrix:
   include:
   - go: "1.12"
     env: RELEASE=true
-  - go: "1.10"
-  - go: master
-
 git:
   depth: 1
 
