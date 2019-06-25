@@ -4,36 +4,39 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 )
 
-const version = "0.1"
-
 var (
-	bindHostPort = kingpin.Flag(
+	version = getVersion()
+
+	app = kingpin.New("zookeeper_exporter", "A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support.")
+
+	bindHostPort = app.Flag(
 		"web.listen-address",
 		"Address on which to expose metrics",
 	).Default("0.0.0.0:9898").String()
 
-	zkHostString = kingpin.Flag(
+	zkHostString = app.Flag(
 		"zk.hosts",
 		"list of ip:port of ZK hosts, comma separated",
 	).Required().String()
 
-	pollInterval = kingpin.Flag(
+	pollInterval = app.Flag(
 		"zk.poll-interval",
 		"How often to poll the ZK servers",
 	).Default("30").Int()
 
-	zkTimeout = kingpin.Flag(
+	zkTimeout = app.Flag(
 		"zk.connect-timeout",
 		"Timeout value for connecting to ZK",
 	).Default("5").Int()
 
-	zkRWDeadLine = kingpin.Flag(
+	zkRWDeadLine = app.Flag(
 		"zk.connect-rw-deadline",
 		"Socket deadline for read & write operations",
 	).Default("5").Int()
@@ -45,9 +48,20 @@ func setup() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(logrus.DebugLevel)
 
-	kingpin.Version(version)
-	kingpin.HelpFlag.Short('h')
-	kingpin.Parse()
+	app.Version(version)
+	app.HelpFlag.Short('h')
+	if _, err := app.Parse(os.Args[1:]); err != nil {
+		log.Fatal("Couldn't parse command line args")
+	}
+}
+
+func getVersion() string {
+	b, err := ioutil.ReadFile("VERSION")
+	if err != nil {
+		log.Errorf("can't read from VERSION file: %s", err)
+		return "0.0.0"
+	}
+	return strings.TrimSpace(string(b))
 }
 
 func main() {
@@ -75,7 +89,6 @@ func main() {
 	}
 
 	// Start http handler & server
-	// http.HandleFunc("/", metricsRequestHandler)
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 
