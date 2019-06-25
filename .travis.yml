@@ -23,6 +23,7 @@ script:
 
 deploy:
   provider: releases
+  skip_cleanup: true
   api_key:
     secure: iXcIfkwYrb18gb6aO/2AzKnkoDcQNt3yrY/2etUX/zffndcHizs+Jh71h6x7StT2FCr2DWDaJTXZbXZpvOeKVIW2EIFCXmTJ/9B7jUjm1dQKZtp5H/X+++klqZncvLRE+jF0+MfL6SJPezlfUIiT93T2ToIwWV8MnzkaA4JFEt3xi+nT7eJy36Yn7jaMO8JgYceg8tS/NCSyf2AqgkL2RP4UR5/RgIIa3Pqua4x7qKF0H7NH1PBaxtCcApXRhlKhkVPnbBQna6nS2DWAAdL2oDOut6sPGElKFWOFZ5rShS8Y739v0GbbBEho1kBFUh0XHlQ69l5oYoSDcgmfiXb9dBIOkv+SUfOhNvCgmra3rE0wJh/dh/cLsW8HRWUIDhviCA4lvcbuJC0BDXx0Iil81UJfSpWTsHInnqo3jjuFQF2QjpaHtINGEi8Ov3DSKvcSdNr5tpyL58Sm7a6OnnlxieYldrbJyV8dvHHRijDRcx/Bqc4RPerOMl24rwZOWONjHBjyi7YfcXIUjm7JQSFbRiielUOtFAprGInfx8DEt4oLvf3j4cP5hZ8fFK7nUCyTKSMqgHxTGi1hj1xS/obbICactMrEdoen1EjiFIe/D1kw2H0pkjWfKEe7Cu4Jb3naZ9rDjTGWaAqb6ZHqVrTviOPJopyuiWfRQEQd1Ig1uOE=
   file:
@@ -32,4 +33,3 @@ deploy:
     repo: davemcphee/zookeeper_exporter
     tags: true
     condition: $RELEASE = true
-  skip_cleanup: true
