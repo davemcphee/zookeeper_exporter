@@ -27,6 +27,7 @@ const (
 	zkServerState             = "zk_server_state"
 	zkFsyncThresholdExceeded  = "zk_fsync_threshold_exceed_count"
 	zkVersion                 = "zk_version"
+	pollerFailureTotal        = "polling_failure_total"
 
 	zkOK = "zk_ok"
 
@@ -36,9 +37,28 @@ const (
 	leader     serverState = 2
 	standalone serverState = 3
 
-	// metric namepspace - prepended to all etric names
+	// metric namespace - prepended to all metric names
 	namespace = "zookeeper__"
 )
+
+type zkMetrics struct {
+	gauges                map[string]*prometheus.GaugeVec
+	pollingFailureCounter *prometheus.CounterVec
+}
+
+func newMetrics() *zkMetrics {
+	// Create an internal metric to count polling failures
+	failureCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: prependNamespace(pollerFailureTotal),
+		Help: "Polling failure count",
+	}, []string{"zk_instance"})
+	prometheus.MustRegister(failureCounter)
+
+	return &zkMetrics{
+		gauges:                initGauges(),
+		pollingFailureCounter: failureCounter,
+	}
+}
 
 func getState(s string) serverState {
 	switch s {
@@ -53,113 +73,114 @@ func getState(s string) serverState {
 	}
 }
 
-func prepend_namespace(rawMetricName string) string {
+// prepends the namespace in front of all metric names
+func prependNamespace(rawMetricName string) string {
 	return namespace + rawMetricName
 }
 
 // Creates a map of all known metrics exposed by zookeeper's mntr command
 // literal metric name maps to a prometheus Gauge with label zk_instance set to zk's address
-func initMetrics() map[string]*prometheus.GaugeVec {
+func initGauges() map[string]*prometheus.GaugeVec {
 
 	allMetrics := make(map[string]*prometheus.GaugeVec)
 
 	allMetrics[zkAvgLatency] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkAvgLatency),
+		Name: prependNamespace(zkAvgLatency),
 		Help: "Average Latency for ZooKeeper network requests",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkMinLatency] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkMinLatency),
+		Name: prependNamespace(zkMinLatency),
 		Help: "Minimum latency for Zookeeper network requests.",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkMaxLatency] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkMaxLatency),
+		Name: prependNamespace(zkMaxLatency),
 		Help: "Maximum latency for ZooKeeper network requests",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkPacketsReceived] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkPacketsReceived),
+		Name: prependNamespace(zkPacketsReceived),
 		Help: "Number of network packets received by the ZooKeeper instance.",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkPacketsSent] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkPacketsSent),
+		Name: prependNamespace(zkPacketsSent),
 		Help: "Number of network packets sent by the ZooKeeper instance.",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkNumAliveConnections] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkNumAliveConnections),
+		Name: prependNamespace(zkNumAliveConnections),
 		Help: "Number of currently alive connections to the ZooKeeper instance.",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkOutstandingRequests] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkOutstandingRequests),
+		Name: prependNamespace(zkOutstandingRequests),
 		Help: "Number of requests currently waiting in the queue.",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkZnodeCount] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkZnodeCount),
+		Name: prependNamespace(zkZnodeCount),
 		Help: "Znode count",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkWatchCount] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkWatchCount),
+		Name: prependNamespace(zkWatchCount),
 		Help: "Watch count",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkEphemeralsCount] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkEphemeralsCount),
+		Name: prependNamespace(zkEphemeralsCount),
 		Help: "Ephemerals Count",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkApproximateDataSize] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkApproximateDataSize),
+		Name: prependNamespace(zkApproximateDataSize),
 		Help: "Approximate data size",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkOpenFileDescriptorCount] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkOpenFileDescriptorCount),
+		Name: prependNamespace(zkOpenFileDescriptorCount),
 		Help: "Number of currently open file descriptors",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkMaxFileDescriptorCount] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkMaxFileDescriptorCount),
+		Name: prependNamespace(zkMaxFileDescriptorCount),
 		Help: "Maximum number of open file descriptors",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkServerState] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkServerState),
+		Name: prependNamespace(zkServerState),
 		Help: "Current state of the zk instance: 1 = follower, 2 = leader, 3 = standalone, -1 if unknown",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkFollowers] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkFollowers),
+		Name: prependNamespace(zkFollowers),
 		Help: "Leader only: number of followers.",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkSyncedFollowers] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkSyncedFollowers),
+		Name: prependNamespace(zkSyncedFollowers),
 		Help: "Leader only: number of followers currently in sync",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkPendingSyncs] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkPendingSyncs),
+		Name: prependNamespace(zkPendingSyncs),
 		Help: "Current number of pending syncs",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkOK] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkOK),
+		Name: prependNamespace(zkOK),
 		Help: "Is ZooKeeper currently OK",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkFsyncThresholdExceeded] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkFsyncThresholdExceeded),
+		Name: prependNamespace(zkFsyncThresholdExceeded),
 		Help: "Number of times File sync exceeded fsyncWarningThresholdMS",
 	}, []string{"zk_instance"})
 
 	allMetrics[zkVersion] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: prepend_namespace(zkVersion),
+		Name: prependNamespace(zkVersion),
 		Help: "Zookeeper version",
 	}, []string{"zk_instance", "zk_version"})
 

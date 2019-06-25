@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"strings"
 	"time"
@@ -9,11 +8,11 @@ import (
 
 type zkPoller struct {
 	interval time.Duration
-	metrics  map[string]*prometheus.GaugeVec
+	metrics  zkMetrics
 	zkServer zkServer
 }
 
-func newPoller(interval time.Duration, metrics map[string]*prometheus.GaugeVec, zkServer zkServer) *zkPoller {
+func newPoller(interval time.Duration, metrics zkMetrics, zkServer zkServer) *zkPoller {
 	return &zkPoller{
 		interval: interval,
 		metrics:  metrics,
@@ -22,11 +21,14 @@ func newPoller(interval time.Duration, metrics map[string]*prometheus.GaugeVec, 
 }
 
 func (p *zkPoller) pollForMetrics() {
+	// Initialise to counter to 0
+	p.metrics.pollingFailureCounter.WithLabelValues(p.zkServer.ipPort).Add(0)
 	for {
 		expirationTime := time.Now().Add(p.interval)
 		m, err := p.zkServer.getStats()
 		if err != nil {
 			log.Errorf("[%v] failed to get stats: %v", p.zkServer.ipPort, err)
+			p.metrics.pollingFailureCounter.WithLabelValues(p.zkServer.ipPort).Inc()
 		}
 
 		p.refreshMetrics(m)
@@ -39,7 +41,7 @@ func (p *zkPoller) pollForMetrics() {
 
 func (p *zkPoller) refreshMetrics(updated map[string]string) {
 	for name, value := range updated {
-		metric, ok := p.metrics[name]
+		metric, ok := p.metrics.gauges[name]
 
 		if !ok {
 			log.Errorf("[%v] stat=%v not defined in metrics.go\n", p.zkServer.ipPort, name)
