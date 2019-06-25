@@ -20,6 +20,8 @@ script:
 - go test -v -race ./...
 - if [ "${LATEST}" = "true" ]; then gox -os="linux darwin" -arch="amd64" -output="zookeeper_exporter.{{.OS}}.{{.Arch}}"
   -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
+- pwd
+- ls -lsart
 
 deploy:
   provider: releases
