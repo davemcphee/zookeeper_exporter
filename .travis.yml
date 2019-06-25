@@ -2,8 +2,8 @@ language: go
 
 matrix:
   include:
-    - go: 1.12
-      env: LATEST=true
+  - go: "1.12"
+    env: LATEST=true
 
 git:
   depth: 1
@@ -12,25 +12,22 @@ notifications:
   email: false
 
 before_install:
-  - go get github.com/mitchellh/gox
+- go get github.com/mitchellh/gox
 
 script:
-  - go get -t -v ./...
-  - diff -u <(echo -n) <(gofmt -d .)
-  - go vet $(go list ./... | grep -v /vendor/)
-  - go test -v -race ./...
-  - if [ "${LATEST}" = "true" ]; then gox -os="linux darwin" -arch="amd64" -output="zookeeper_exporter.{{.OS}}.{{.Arch}}"
-    -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
+- go get -t -v ./...
+- diff -u <(echo -n) <(gofmt -d .)
+- go vet $(go list ./... | grep -v /vendor/)
+- go test -v -race ./...
+- if [ "${LATEST}" = "true" ]; then gox -os="linux darwin" -arch="amd64" -output="zookeeper_exporter.{{.OS}}.{{.Arch}}"
+  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
 
 deploy:
   provider: releases
-  skip_cleanup: true
   api_key:
-    secure: KKu2JpnhOWVq9d9XuZAbuhmYzlKdD/hOjS/v6OlCqqMmnUtS0wY7uWYwPUkn3ZFmZQF/WRqnour+/rxzGJL4eoM5ZCQ24OCNmURShG8SZZnd65brE+RAwDrIPcAAdMafeJtG/D6uS7wTWGtiX4YRM5uFl/WEoRNv/e7DUR4R1W3DQd4vyeTuWR0RvAivNKxK1gOzRjKaotMXF4WdL03V04XtkyGjNGmIXlxrFuseDvQFJOaCUP0JI9+CnYRl7OmNp/5X8ErHybLyRdPlSKpHIB1KxFQI/4pdFeuXLWkI+pyAsRtmnJIp+mBDdKApgb4k2uzhglfGj8EC0LPXHMOteGZFDwVLaJAGkjC3K7BYGtTBFwlxPJ38G6hmi7ogLU3U8HUZxOx4QVFLLj9+15gHr1n4Pc8jGgWLli2THZeugAQ52ipt83Lh7YRoKa9uZCNle4V/5cJVCaw8LjMddPFlmMReGPK2Ed2umX6xxNrQvSU2v+aSV4/wmtDHOczNKF9iciOwspAB/QCzbgVjS5oHCTQcfsMp4Xf5Pw/nAc7NqNuVwI9rqwxj4FAEdlJHFfr6BHRYktP7/sirqS97LPxP8Dugl9w/3VrXkr22VjHJlCX3UQPHcoUyfJOTZsUe8vtJuZ/JTqtSrtExoZeXqmyAg7m2mK4SXdHgb11OGZDgS3A=
+    secure: iXcIfkwYrb18gb6aO/2AzKnkoDcQNt3yrY/2etUX/zffndcHizs+Jh71h6x7StT2FCr2DWDaJTXZbXZpvOeKVIW2EIFCXmTJ/9B7jUjm1dQKZtp5H/X+++klqZncvLRE+jF0+MfL6SJPezlfUIiT93T2ToIwWV8MnzkaA4JFEt3xi+nT7eJy36Yn7jaMO8JgYceg8tS/NCSyf2AqgkL2RP4UR5/RgIIa3Pqua4x7qKF0H7NH1PBaxtCcApXRhlKhkVPnbBQna6nS2DWAAdL2oDOut6sPGElKFWOFZ5rShS8Y739v0GbbBEho1kBFUh0XHlQ69l5oYoSDcgmfiXb9dBIOkv+SUfOhNvCgmra3rE0wJh/dh/cLsW8HRWUIDhviCA4lvcbuJC0BDXx0Iil81UJfSpWTsHInnqo3jjuFQF2QjpaHtINGEi8Ov3DSKvcSdNr5tpyL58Sm7a6OnnlxieYldrbJyV8dvHHRijDRcx/Bqc4RPerOMl24rwZOWONjHBjyi7YfcXIUjm7JQSFbRiielUOtFAprGInfx8DEt4oLvf3j4cP5hZ8fFK7nUCyTKSMqgHxTGi1hj1xS/obbICactMrEdoen1EjiFIe/D1kw2H0pkjWfKEe7Cu4Jb3naZ9rDjTGWaAqb6ZHqVrTviOPJopyuiWfRQEQd1Ig1uOE=
   file:
     - zookeeper_exporter.linux.amd64
     - zookeeper_exporter.darwin.amd64
   on:
     repo: davemcphee/zookeeper_exporter
-    tags: true
-    condition: $LATEST = true
