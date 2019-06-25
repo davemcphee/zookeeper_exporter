@@ -3,7 +3,9 @@ language: go
 matrix:
   include:
   - go: "1.12"
-    env: LATEST=true
+    env: RELEASE=true
+  - go: "1.10"
+  - go: master
 
 git:
   depth: 1
@@ -32,5 +34,5 @@ deploy:
   on:
     repo: davemcphee/zookeeper_exporter
     tags: true
-    condition: $LATEST = true
+    condition: $RELEASE = true
   skip_cleanup: true
