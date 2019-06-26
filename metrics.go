@@ -36,9 +36,6 @@ const (
 	follower   serverState = 1
 	leader     serverState = 2
 	standalone serverState = 3
-
-	// metric namespace - prepended to all metric names
-	namespace = "zookeeper__"
 )
 
 type zkMetrics struct {
@@ -75,7 +72,7 @@ func getState(s string) serverState {
 
 // prepends the namespace in front of all metric names
 func prependNamespace(rawMetricName string) string {
-	return namespace + rawMetricName
+	return *metricsNamespace + rawMetricName
 }
 
 // Creates a map of all known metrics exposed by zookeeper's mntr command

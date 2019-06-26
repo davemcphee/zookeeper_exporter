@@ -26,6 +26,11 @@ var (
 		"list of ip:port of ZK hosts, comma separated",
 	).Required().String()
 
+	metricsNamespace = app.Flag(
+		"metrics.namespace",
+		"string to prepend to all metric names",
+	).Default("zookeeper__").String()
+
 	pollInterval = app.Flag(
 		"zk.poll-interval",
 		"How often to poll the ZK servers",

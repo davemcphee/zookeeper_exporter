@@ -25,6 +25,8 @@ Flags:
       --web.listen-address="0.0.0.0:9898"  
                                Address on which to expose metrics
       --zk.hosts=ZK.HOSTS      list of ip:port of ZK hosts, comma separated
+      --metrics.namespace="zookeeper__"  
+                               string to prepend to all metric names
       --zk.poll-interval=30    How often to poll the ZK servers
       --zk.connect-timeout=4   Timeout value for opening socket to ZK
       --zk.connect-deadline=3  Connection deadline for read & write operations
