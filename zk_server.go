@@ -13,7 +13,7 @@ import (
 const (
 	monitorCMD = "mntr"
 	okCMD      = "ruok"
-	enviCMD    = "envi"
+	enviCMD    = "envi" // Might use this in the future?
 )
 
 // zkServer object
@@ -73,7 +73,8 @@ func (zk *zkServer) getOKStatus() (string, error) {
 }
 
 func (zk *zkServer) sendCommand(cmd string) ([]byte, error) {
-	conn, err := net.Dial("tcp", zk.ipPort)
+	dialer := net.Dialer{Timeout: time.Duration(*zkTimeout) * time.Second}
+	conn, err := dialer.Dial("tcp", zk.ipPort)
 	if err != nil {
 		// log.Warnf("[%v] failed to dial zkServer: %v", zk.ipPort, err)
 		return []byte{}, err
@@ -85,12 +86,12 @@ func (zk *zkServer) sendCommand(cmd string) ([]byte, error) {
 	}()
 
 	// ensure these socket fail fast if ZK having problems
-	deadline := 3 * time.Second
+	RWDeadLine := time.Duration(*zkRWDeadLine) * time.Second
 
-	if err := conn.SetReadDeadline(time.Now().Add(deadline)); err != nil {
+	if err := conn.SetReadDeadline(time.Now().Add(RWDeadLine)); err != nil {
 		log.Errorf("[%v] failed to set Read Deadline on conn: %v", zk.ipPort, err)
 	}
-	if err := conn.SetWriteDeadline(time.Now().Add(deadline)); err != nil {
+	if err := conn.SetWriteDeadline(time.Now().Add(RWDeadLine)); err != nil {
 		log.Errorf("[%v] failed to set Write Deadline on conn: %v", zk.ipPort, err)
 	}
 
