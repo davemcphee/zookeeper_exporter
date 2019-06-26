@@ -21,16 +21,14 @@ usage: zookeeper_exporter --zk.hosts=ZK.HOSTS [<flags>]
 A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support.
 
 Flags:
-  -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
+  -h, --help                   Show context-sensitive help (also try --help-long and --help-man).
       --web.listen-address="0.0.0.0:9898"  
-                              Address on which to expose metrics
-      --zk.hosts=ZK.HOSTS     list of ip:port of ZK hosts, comma separated
-      --zk.poll-interval=30   How often to poll the ZK servers
-      --zk.connect-timeout=5  Timeout value for connecting to ZK
-      --zk.connect-rw-deadline=5  
-                              Socket deadline for read & write operations
-      --version               Show application version.
-  
+                               Address on which to expose metrics
+      --zk.hosts=ZK.HOSTS      list of ip:port of ZK hosts, comma separated
+      --zk.poll-interval=30    How often to poll the ZK servers
+      --zk.connect-timeout=4   Timeout value for opening socket to ZK
+      --zk.connect-deadline=3  Connection deadline for read & write operations
+      --version                Show application version.
 
 $ zookeeper_exporter --zk.hosts=10.0.0.9:2181,10.0.0.10:2181  
 ~~~  

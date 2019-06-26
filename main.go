@@ -33,13 +33,13 @@ var (
 
 	zkTimeout = app.Flag(
 		"zk.connect-timeout",
-		"Timeout value for connecting to ZK",
-	).Default("5").Int()
+		"Timeout value for opening socket to ZK",
+	).Default("4").Int()
 
 	zkRWDeadLine = app.Flag(
-		"zk.connect-rw-deadline",
-		"Socket deadline for read & write operations",
-	).Default("5").Int()
+		"zk.connect-deadline",
+		"Connection deadline for read & write operations",
+	).Default("3").Float()
 
 	log = logrus.New()
 )
@@ -82,7 +82,7 @@ func main() {
 	// Create new metrics interface
 	metrics := newMetrics()
 
-	// Start an export thread per server
+	// Start one poller per server
 	for _, ipport := range zkHosts {
 		p := newPoller(intervalDuration, *metrics, *newZKServer(ipport))
 		go p.pollForMetrics()
