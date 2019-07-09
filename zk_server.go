@@ -76,7 +76,6 @@ func (zk *zkServer) sendCommand(cmd string) ([]byte, error) {
 	dialer := net.Dialer{Timeout: time.Duration(*zkTimeout) * time.Second}
 	conn, err := dialer.Dial("tcp", zk.ipPort)
 	if err != nil {
-		// log.Warnf("[%v] failed to dial zkServer: %v", zk.ipPort, err)
 		return []byte{}, err
 	}
 	defer func() {
@@ -103,7 +102,6 @@ func (zk *zkServer) sendCommand(cmd string) ([]byte, error) {
 	var buf bytes.Buffer
 	_, err = io.Copy(&buf, conn)
 	if err != nil {
-		log.Errorf("[%v] failed to read from zk: %v", zk.ipPort, err)
 		return []byte{}, err
 	}
 	return buf.Bytes(), nil

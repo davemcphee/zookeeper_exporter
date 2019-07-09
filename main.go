@@ -14,22 +14,17 @@ import (
 var (
 	version = getVersion()
 
-	app = kingpin.New("zookeeper_exporter", "A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support.")
+	app = kingpin.New("zookeeper_exporter", "A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support, with optional consul registration baked in.")
 
 	bindHostPort = app.Flag(
 		"web.listen-address",
 		"Address on which to expose metrics",
-	).Default("0.0.0.0:9898").String()
+	).Default("127.0.0.1:9898").String()
 
 	zkHostString = app.Flag(
 		"zk.hosts",
 		"list of ip:port of ZK hosts, comma separated",
 	).Required().String()
-
-	metricsNamespace = app.Flag(
-		"metrics.namespace",
-		"string to prepend to all metric names",
-	).Default("zookeeper__").String()
 
 	pollInterval = app.Flag(
 		"zk.poll-interval",
@@ -38,13 +33,33 @@ var (
 
 	zkTimeout = app.Flag(
 		"zk.connect-timeout",
-		"Timeout value for opening socket to ZK",
+		"Timeout value for opening socket to ZK (s)",
 	).Default("4").Int()
 
 	zkRWDeadLine = app.Flag(
 		"zk.connect-deadline",
-		"Connection deadline for read & write operations",
+		"Connection deadline for read & write operations (s)",
 	).Default("3").Float()
+
+	metricsNamespace = app.Flag(
+		"metrics.namespace",
+		"string to prepend to all metric names",
+	).Default("zookeeper__").String()
+
+	consulName = app.Flag(
+		"consul.service-name",
+		"If defined, register zookeeper_exporter with local consul agent",
+	).Default("").String()
+
+	consulTags = app.Flag(
+		"consul.service-tags",
+		"Comma separated list of tags for consul service",
+	).Default("scrapeme").String()
+
+	consulTTL = app.Flag(
+		"consul.service-ttl",
+		"consul service TTL - consul will mark service unhealthy if zookeeper_exporter is down for this long (s). Consul will also unregister the service entirely after this service has been unhealthy for this long * 10",
+	).Default("60").Int()
 
 	log = logrus.New()
 )
@@ -57,6 +72,13 @@ func setup() {
 	app.HelpFlag.Short('h')
 	if _, err := app.Parse(os.Args[1:]); err != nil {
 		log.Fatal("Couldn't parse command line args")
+	}
+
+	// Register w/ consul if *consulName defined on cmd line
+	if *consulName != "" {
+		if err := registerWithConsulAgent(*consulName, *consulTags, *bindHostPort, *consulTTL); err != nil {
+			log.Fatalf("failed to register with consul: %s", err)
+		}
 	}
 }
 
@@ -72,7 +94,7 @@ func getVersion() string {
 func main() {
 	setup()
 	zkHosts := strings.Split(*zkHostString, ",")
-	if *zkHostString == "" || len(zkHosts) < 0 {
+	if *zkHostString == "" || len(zkHosts) < 1 {
 		log.Fatal("Need to define zookeeper servers to monitor")
 	}
 
@@ -89,6 +111,9 @@ func main() {
 
 	// Start one poller per server
 	for _, ipport := range zkHosts {
+		if !strings.Contains(ipport, ":") {
+			log.Fatalf("zookeeper host \"%s\" is not ip:port format", ipport)
+		}
 		p := newPoller(intervalDuration, *metrics, *newZKServer(ipport))
 		go p.pollForMetrics()
 	}
