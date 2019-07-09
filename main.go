@@ -14,7 +14,7 @@ import (
 var (
 	version = getVersion()
 
-	app = kingpin.New("zookeeper_exporter", "A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support.")
+	app = kingpin.New("zookeeper_exporter", "A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support, with optional consul registration baked in.")
 
 	bindHostPort = app.Flag(
 		"web.listen-address",
@@ -58,7 +58,7 @@ var (
 
 	consulTTL = app.Flag(
 		"consul.service-ttl",
-		"consul service TTL - consul will remove service if zookeeper_exporter is down for this long (s)",
+		"consul service TTL - consul will mark service unhealthy if zookeeper_exporter is down for this long (s). Consul will also unregister the service entirely after this service has been unhealthy for this long * 10",
 	).Default("60").Int()
 
 	log = logrus.New()
