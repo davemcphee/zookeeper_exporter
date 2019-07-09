@@ -27,7 +27,7 @@ const (
 	zkServerState             = "zk_server_state"
 	zkFsyncThresholdExceeded  = "zk_fsync_threshold_exceed_count"
 	zkVersion                 = "zk_version"
-	pollerFailureTotal        = "polling_failure_total"
+	pollerFailuresTotal       = "polling_failures_total"
 
 	zkOK = "zk_ok"
 
@@ -46,7 +46,7 @@ type zkMetrics struct {
 func newMetrics() *zkMetrics {
 	// Create an internal metric to count polling failures
 	failureCounter := prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: prependNamespace(pollerFailureTotal),
+		Name: prependNamespace(pollerFailuresTotal),
 		Help: "Polling failure count",
 	}, []string{"zk_instance"})
 	prometheus.MustRegister(failureCounter)
