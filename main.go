@@ -4,7 +4,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -12,7 +11,8 @@ import (
 )
 
 var (
-	version = getVersion()
+	// version set by ldflags
+	Version string
 
 	app = kingpin.New("zookeeper_exporter", "A zookeeper metrics exporter for prometheus, with zk_version and leaderServes=no support, with optional consul registration baked in.")
 
@@ -68,7 +68,7 @@ func setup() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(logrus.DebugLevel)
 
-	app.Version(version)
+	app.Version(Version)
 	app.HelpFlag.Short('h')
 	if _, err := app.Parse(os.Args[1:]); err != nil {
 		log.Fatal("Couldn't parse command line args")
@@ -82,15 +82,6 @@ func setup() {
 	}
 }
 
-func getVersion() string {
-	b, err := ioutil.ReadFile("VERSION")
-	if err != nil {
-		log.Errorf("can't read from VERSION file: %s", err)
-		return "0.0.0"
-	}
-	return strings.TrimSpace(string(b))
-}
-
 func main() {
 	setup()
 	zkHosts := strings.Split(*zkHostString, ",")
@@ -98,7 +89,7 @@ func main() {
 		log.Fatal("Need to define zookeeper servers to monitor")
 	}
 
-	log.Printf("Starting zookeeper_exporter v%v", version)
+	log.Printf("Starting zookeeper_exporter v%v", Version)
 	log.Printf("Listening on http://%v", *bindHostPort)
 	log.Printf("Polling %v zookeeper servers every %ds", len(zkHosts), *pollInterval)
 	log.Debugf("ZK Servers: %q", zkHosts)
