@@ -19,7 +19,7 @@ script:
 - go vet $(go list ./... | grep -v /vendor/)
 - go test -v -race ./...
 - if [ "${RELEASE}" = "true" ]; then gox -os="linux darwin" -arch="amd64" -output="zookeeper_exporter.{{.OS}}.{{.Arch}}"
-  -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose ./...; fi
+  -ldflags "-X main.Rev=`git rev-parse --short HEAD` -X main.Version=`git describe --abbrev=0`" -verbose ./...; fi
 
 deploy:
   provider: releases
